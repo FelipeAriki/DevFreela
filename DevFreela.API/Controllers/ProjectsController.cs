@@ -1,4 +1,5 @@
 ﻿using DevFreela.Application.Models;
+using DevFreela.Application.Services;
 using DevFreela.Core.Entities;
 using DevFreela.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -10,120 +11,103 @@ namespace DevFreela.API.Controllers
     [ApiController]
     public class ProjectsController : ControllerBase
     {
-        private readonly DevfreelaDbContext _context;
-        public ProjectsController(DevfreelaDbContext context)
+        private readonly IProjectService _projectService;
+        public ProjectsController(IProjectService projectService)
         {
-            _context = context;
+            _projectService = projectService;
         }
 
         [HttpGet]
         public IActionResult GetProjects(string search = "", int page = 0, int size = 3)
         {
-            var projects = _context.Projects
-                .Include(p => p.Client)
-                .Include(p => p.Freelancer)
-                .Where(p => !p.IsDeleted && p.Title.Contains(search))
-                .Skip(page * size)
-                .Take(size)
-                .ToList();
-
-            return Ok(projects.Select(p => ProjectItemViewModel.FromEntity(p)).ToList());
+            var result = _projectService.GetProjects();
+            return Ok(result);
         }
 
         [HttpGet("{id:int}")]
         public IActionResult GetProjectById(int id)
         {
-            var project = _context.Projects
-                .Include(p => p.Client)
-                .Include(p => p.Freelancer)
-                .Include(p => p.Comments)
-                .SingleOrDefault(p => p.Id == id);
+            var result = _projectService.GetProjectById(id);
 
-            return Ok(ProjectViewModel.FromEntity(project));
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
         }
 
         [HttpPost]
         public IActionResult CreateProject(CreateProjectInputModel model)
         {
-            var projects = model.ToEntity();
+            var result = _projectService.CreateProject(model);
 
-            _context.Projects.Add(projects);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(GetProjectById), new { id = 1 }, model);
+            return CreatedAtAction(nameof(GetProjectById), new { id = result.Data }, model);
         }
 
         [HttpPut("{id:int}")]
         public IActionResult UpdateProject(int id, UpdateProjectInputModel model)
         {
-            var project = _context.Projects.SingleOrDefault(p => p.Id == id);
-            if(project != null)
-            {
-                project.Update(model.Title, model.Description, model.TotalCost);
-                _context.Update(project);
-                _context.SaveChanges();
+            var result = _projectService.UpdateProject(model);
 
-                return NoContent();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
             }
-            return NotFound();
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public IActionResult DeleteProject(int id)
         {
-            var project = _context.Projects.SingleOrDefault(p => p.Id == id);
-            if (project != null)
-            {
-                project.SetAsDeleted();
-                _context.Update(project);
-                _context.SaveChanges();
+            var result = _projectService.DeleteProject(id);
 
-                return NoContent();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
             }
-            return NotFound();
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}/start")]
-        public IActionResult Start(int id)
+        public IActionResult StartProject(int id)
         {
-            var project = _context.Projects.SingleOrDefault(p => p.Id == id);
-            if (project != null)
-            {
-                project.Start();
-                _context.Update(project);
-                _context.SaveChanges();
+            var result = _projectService.StartProject(id);
 
-                return NoContent();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
             }
-            return NotFound();
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}/complete")]
-        public IActionResult Complete(int id)
+        public IActionResult CompleteProject(int id)
         {
-            var project = _context.Projects.SingleOrDefault(p => p.Id == id);
-            if (project != null)
-            {
-                project.Complete();
-                _context.Update(project);
-                _context.SaveChanges();
+            var result = _projectService.CompleteProject(id);
 
-                return NoContent();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
             }
-            return NotFound();
+
+            return NoContent();
         }
 
         [HttpPost("{id:int}/comments")]
         public IActionResult CreateProjectComments(int id, CreateProjectCommentInputModel model)
         {
-            var project = _context.Projects.SingleOrDefault(p => p.Id == id);
-            if (project is null) return NotFound();
+            var result = _projectService.CreateProjectComments(id, model);
 
-            var comment = new ProjectComment(model.Content, model.IdProject, model.IdUser);
-            _context.ProjectComments.Add(comment);
-            _context.SaveChanges();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
 
-            return Ok();
+            return NoContent();
         }
     }
 }
