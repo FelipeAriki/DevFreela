@@ -1,9 +1,19 @@
-﻿using DevFreela.Application.Models;
+﻿using DevFreela.Application.Commands.CompleteProject;
+using DevFreela.Application.Commands.DeleteProject;
+using DevFreela.Application.Commands.InsertComment;
+using DevFreela.Application.Commands.InsertProject;
+using DevFreela.Application.Commands.StartProject;
+using DevFreela.Application.Commands.UpdateProject;
+using DevFreela.Application.Models;
+using DevFreela.Application.Queries.GetProjectById;
+using DevFreela.Application.Queries.GetProjects;
 using DevFreela.Application.Services;
 using DevFreela.Core.Entities;
 using DevFreela.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace DevFreela.API.Controllers
 {
@@ -12,22 +22,24 @@ namespace DevFreela.API.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
-        public ProjectsController(IProjectService projectService)
+        private readonly IMediator _mediator;
+        public ProjectsController(IProjectService projectService, IMediator mediator)
         {
             _projectService = projectService;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public IActionResult GetProjects(string search = "", int page = 0, int size = 3)
+        public async Task<IActionResult> GetProjects(string search = "", int page = 0, int size = 3)
         {
-            var result = _projectService.GetProjects();
+            var result = await _mediator.Send(new GetProjectsQuery());
             return Ok(result);
         }
 
         [HttpGet("{id:int}")]
-        public IActionResult GetProjectById(int id)
+        public async Task<IActionResult> GetProjectById(int id)
         {
-            var result = _projectService.GetProjectById(id);
+            var result = await _mediator.Send(new GetProjectByIdQuery(id));
 
             if (!result.IsSuccess)
             {
@@ -38,17 +50,17 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateProject(CreateProjectInputModel model)
+        public async Task<IActionResult> CreateProject(InsertProjectCommand command)
         {
-            var result = _projectService.CreateProject(model);
+            var result = await _mediator.Send(command);
 
-            return CreatedAtAction(nameof(GetProjectById), new { id = result.Data }, model);
+            return CreatedAtAction(nameof(GetProjectById), new { id = result.Data }, command);
         }
 
         [HttpPut("{id:int}")]
-        public IActionResult UpdateProject(int id, UpdateProjectInputModel model)
+        public async Task<IActionResult> UpdateProject(int id, UpdateProjectCommand command)
         {
-            var result = _projectService.UpdateProject(model);
+            var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
             {
@@ -59,9 +71,9 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public IActionResult DeleteProject(int id)
+        public async Task<IActionResult> DeleteProject(int id)
         {
-            var result = _projectService.DeleteProject(id);
+            var result = await _mediator.Send(new DeleteProjectCommand(id));
 
             if (!result.IsSuccess)
             {
@@ -72,9 +84,9 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpPut("{id:int}/start")]
-        public IActionResult StartProject(int id)
+        public async Task<IActionResult> StartProject(int id)
         {
-            var result = _projectService.StartProject(id);
+            var result = await _mediator.Send(new StartProjectCommand(id));
 
             if (!result.IsSuccess)
             {
@@ -85,9 +97,9 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpPut("{id:int}/complete")]
-        public IActionResult CompleteProject(int id)
+        public async Task<IActionResult> CompleteProject(int id)
         {
-            var result = _projectService.CompleteProject(id);
+            var result = await _mediator.Send(new CompleteProjectCommand(id));
 
             if (!result.IsSuccess)
             {
@@ -98,9 +110,9 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpPost("{id:int}/comments")]
-        public IActionResult CreateProjectComments(int id, CreateProjectCommentInputModel model)
+        public async Task<IActionResult> CreateProjectComments(int id, InsertCommentCommand command)
         {
-            var result = _projectService.CreateProjectComments(id, model);
+            var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
             {
