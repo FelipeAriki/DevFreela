@@ -1,8 +1,7 @@
 using DevFreela.API.ExceptionHandler;
 using DevFreela.Application;
 using DevFreela.Application.Models;
-using Microsoft.EntityFrameworkCore;
-using DevFreela.Infrastructure.Persistence;
+using DevFreela.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,11 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<FreelanceTotalCostConfig>(builder.Configuration.GetSection("FreelanceTotalCostConfig"));
 
-//builder.Services.AddDbContext<DevfreelaDbContext>(o => o.UseInMemoryDatabase("DevfreelaDb"));
-var connectionString = builder.Configuration.GetConnectionString("DevFreelaCs");
-builder.Services.AddDbContext<DevfreelaDbContext>(o => o.UseSqlServer(connectionString));
-
-builder.Services.AddApplication();
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
 
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddProblemDetails();
