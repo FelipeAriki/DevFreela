@@ -23,5 +23,13 @@
             FreelanceProjects = [];
             Comments = [];
         }
+
+        public void Update(string name, string email, DateTime birthDate, bool active)
+        {
+            FullName = name;
+            Email = email;
+            BirthDate = birthDate;
+            Active = active;
+        }
     }
 }

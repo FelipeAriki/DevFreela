@@ -52,8 +52,8 @@ namespace DevFreela.API.Controllers
             return CreatedAtAction(nameof(GetProjectById), new { id = result.Data }, command);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateProject(int id, UpdateProjectCommand command)
+        [HttpPut]
+        public async Task<IActionResult> UpdateProject(UpdateProjectCommand command)
         {
             var result = await _mediator.Send(command);
 
@@ -104,8 +104,8 @@ namespace DevFreela.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id:int}/comments")]
-        public async Task<IActionResult> CreateProjectComments(int id, InsertCommentCommand command)
+        [HttpPost("comments")]
+        public async Task<IActionResult> CreateProjectComments(InsertCommentCommand command)
         {
             var result = await _mediator.Send(command);
 

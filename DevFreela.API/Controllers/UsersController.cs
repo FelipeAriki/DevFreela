@@ -1,8 +1,16 @@
-﻿using DevFreela.Application.Models;
+﻿using DevFreela.Application.Commands.User.CreateUser;
+using DevFreela.Application.Commands.User.CreateUserSkill;
+using DevFreela.Application.Commands.User.DeleteUser;
+using DevFreela.Application.Commands.User.UpdateUser;
+using DevFreela.Application.Models;
+using DevFreela.Application.Queries.User.GetUserById;
+using DevFreela.Application.Queries.User.GetUsers;
 using DevFreela.Core.Entities;
 using DevFreela.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace DevFreela.API.Controllers
 {
@@ -10,50 +18,70 @@ namespace DevFreela.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly DevfreelaDbContext _context;
+        private readonly IMediator _mediator;
 
-        public UsersController(DevfreelaDbContext context)
+        public UsersController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            var users = _context.Users.ToList();
+            var users = await _mediator.Send(new GetUsersQuery());
             return Ok(users);
         }
 
         [HttpGet("{id:int}")]
-        public IActionResult GetUserById(int id)
+        public async Task<IActionResult> GetUserById(int id)
         {
-            var user = _context.Users.Include(u => u.Skills).ThenInclude(u => u.Skill).SingleOrDefault(u => u.Id == id);
-            if(user is null) return NotFound();
+            var result = await _mediator.Send(new GetUserByIdQuery(id));
 
-            var model = UserViewModel.FromEntity(user);
-            return Ok(model);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
         }
 
         [HttpPost]
-        public IActionResult CreateUser(CreateUserInputModel model)
+        public async Task<IActionResult> CreateUser(CreateUserCommand command)
         {
-            var user = new User(model.FullName, model.Email, model.BirthDate);
+            var result = await _mediator.Send(command);
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
 
-            return NoContent();
+            return CreatedAtAction(nameof(GetUserById), new { id = result.Data }, command);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UpdateUserCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await _mediator.Send(new DeleteUserCommand(id));
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result);
         }
 
         [HttpPost("{id:int}/skills")]
-        public IActionResult CreateUserSkill(int id, UserSkillsInputModel model)
+        public async Task<IActionResult> CreateUserSkill(CreateUserSkillCommand command)
         {
-            var userSkills = model.SkillIds.Select(s => new UserSkill(id, s)).ToList();
-
-            _context.UserSkills.AddRange(userSkills);
-            _context.SaveChanges();
-
-            return NoContent();
+            var userSkills = await _mediator.Send(command);
+            return Ok(userSkills);
         }
 
         [HttpPut("{id:int}/profile-picture")]
