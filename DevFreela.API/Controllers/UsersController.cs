@@ -2,15 +2,10 @@
 using DevFreela.Application.Commands.User.CreateUserSkill;
 using DevFreela.Application.Commands.User.DeleteUser;
 using DevFreela.Application.Commands.User.UpdateUser;
-using DevFreela.Application.Models;
 using DevFreela.Application.Queries.User.GetUserById;
 using DevFreela.Application.Queries.User.GetUsers;
-using DevFreela.Core.Entities;
-using DevFreela.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace DevFreela.API.Controllers
 {
