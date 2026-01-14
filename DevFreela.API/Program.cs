@@ -1,6 +1,5 @@
 using DevFreela.API.ExceptionHandler;
 using DevFreela.Application;
-using DevFreela.Application.Models;
 using DevFreela.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
