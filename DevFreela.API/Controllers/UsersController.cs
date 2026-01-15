@@ -11,7 +11,6 @@ using DevFreela.Application.Queries.User.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace DevFreela.API.Controllers
 {
