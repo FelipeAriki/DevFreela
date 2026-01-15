@@ -7,7 +7,8 @@ namespace DevFreela.Core.Repositories
         Task<List<User>> GetUsers();
         Task<User?> GetUserDetailsById(int id);
         Task<User?> GetUserById(int id);
-        Task<User?> GetUserBydEmailPassword(string email, string password);
+        Task<User?> GetUserByEmailPassword(string email, string password);
+        Task<User?> GetUserByEmail(string email);
         Task<int> CreateUser(User project);
         Task UpdateUser(User project);
         Task CreateUserSkill(List<UserSkill> userSkill);

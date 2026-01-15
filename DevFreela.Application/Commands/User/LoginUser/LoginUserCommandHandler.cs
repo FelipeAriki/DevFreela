@@ -18,7 +18,7 @@ namespace DevFreela.Application.Commands.User.LoginUser
         public async Task<ResultViewModel<LoginViewModel>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
         {
             var hash = _authService.ComputeHash(request.Password);
-            var user = await _repository.GetUserBydEmailPassword(request.Email, hash);
+            var user = await _repository.GetUserByEmailPassword(request.Email, hash);
             if(user is null)
                 return ResultViewModel<LoginViewModel>.Error("Usuário não encontrado.");
 

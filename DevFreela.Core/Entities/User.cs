@@ -36,5 +36,10 @@
             BirthDate = birthDate;
             Active = active;
         }
+
+        public void UpdatePassword(string password)
+        {
+            Password = password;
+        }
     }
 }
