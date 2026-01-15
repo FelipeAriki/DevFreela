@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Environment variables
+.env
+
+# ASP.NET Core development settings
+appsettings.json
+appsettings.Development.json
