@@ -67,7 +67,7 @@ namespace DevFreela.API.Controllers
             return Ok(result);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var result = await _mediator.Send(new DeleteUserCommand(id));

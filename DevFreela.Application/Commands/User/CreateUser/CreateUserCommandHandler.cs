@@ -5,7 +5,7 @@ using MediatR;
 
 namespace DevFreela.Application.Commands.User.CreateUser
 {
-    internal class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, ResultViewModel<int>>
+    public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, ResultViewModel<int>>
     {
         private readonly IUserRepository _repository;
         private readonly IAuthService _authService;
